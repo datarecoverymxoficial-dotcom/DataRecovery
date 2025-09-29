@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Acerca — Nombre del Proyecto</title>
+  <meta name="description" content="Acerca del proyecto: misión, visión y detalles técnicos." />
+  <link rel="preload" href="styles.css" as="style" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.ico" />
+  <meta property="og:title" content="Acerca — Nombre del Proyecto" />
+  <meta property="og:description" content="Conoce más sobre este proyecto web moderno y accesible." />
+  <meta property="og:type" content="website" />
+</head>
+<body>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="index.html" aria-label="Inicio">
+        <img src="imagenes/logo.png" alt="" width="28" height="28" />
+        <span>Data Recovery</span>
+      </a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="menu">☰</button>
+      <nav id="menu" class="menu" aria-label="Principal">
+        <ul>
+          <li><a href="index.html">Inicio</a></li>
+          <li><a href="servicios.html">Servicios</a></li>
+          <li><a aria-current="page" href="acerca.html">Acerca</a></li>
+          <li><a href="contacto.html">Contacto</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido">
+<section class="section" id="acerca">
+  <div class="container">
+    <h1>Acerca de Data Recovery</h1>
+   
+    <p class="lead justificado">
+      Somos un equipo especializado en recuperación de información digital. Rescatamos datos de computadoras,
+      discos duros, memorias USB y dispositivos móviles con procesos seguros y confidenciales. También ofrecemos
+      copias de seguridad y asesoría preventiva para proteger tu información a futuro.
+    </p>
+
+    <div class="grid-2" style="margin-top:20px;">
+      <!-- Columna Izquierda -->
+      <div>
+        <article class="card">
+          <img src="imagenes/mision.png" alt="Misión" class="img-center">
+          <h3>Misión</h3>
+          <p>Recuperar la información más valiosa con seguridad, confidencialidad e integridad,
+             ofreciendo un servicio personalizado y eficiente.</p>
+        </article>
+
+        <article class="card" style="margin-top:12px;">
+          <img src="imagenes/vision.png" alt="Visión" class="img-center">
+          <h3>Visión</h3>
+          <p>Consolidarnos como líderes en recuperación y protección de datos, respaldados por innovación
+             tecnológica y compromiso con nuestros clientes.</p>
+        </article>
+
+        <article class="card" style="margin-top:12px;">
+          <img src="imagenes/valores.png" alt="Valores" class="img-center">
+          <h3>Valores</h3>
+          <ul class="list">
+            <li>Confidencialidad y privacidad.</li>
+            <li>Confiabilidad técnica.</li>
+            <li>Responsabilidad en el manejo de equipos.</li>
+            <li>Rapidez y claridad en tiempos.</li>
+            <li>Integridad de la información recuperada.</li>
+          </ul>
+        </article>
+      </div>
+
+      <!-- Columna Derecha -->
+      <div>
+        <article class="card">
+          <img src="imagenes/diferencia.png" alt="Por qué elegirnos" class="img-center">
+          <h3>¿Por qué elegirnos?</h3>
+          <ul class="list">
+            <li>Especialistas en casos complejos.</li>
+            <li>Protocolos estrictos de seguridad.</li>
+            <li>Diagnóstico gratuito y presupuestos claros.</li>
+            <li>Servicios preventivos y de respaldo.</li>
+          </ul>
+        </article>
+
+        <article class="card" style="margin-top:12px;">
+          <img src="imagenes/servicios.png" alt="Servicios" class="img-center">
+          <h3>Servicios</h3>
+          <ul class="list">
+            <li>Recuperación de datos (PC, discos, USB y móviles).</li>
+            <li>Copias de seguridad en nube y dispositivos.</li>
+            <li>Asesoría preventiva y mantenimiento.</li>
+          </ul>
+          <div class="btn-center" style="margin-top:10px;">
+            <a class="btn primary" href="servicios.html">Ver servicios</a>
+          </div>
+        </article>
+
+        <article class="card" style="margin-top:12px;">
+          <img src="imagenes/contacto.png" alt="Contacto" class="img-center">
+          <h3>Contacto y ubicación</h3>
+          <p>Atendemos en: <strong>Galván 102, Centro, Misantla, Ver.</strong></p>
+          <p class="help">Agenda un diagnóstico gratuito y recibe una estimación orientativa.</p>
+          <div class="btn-center" style="margin-top:10px;">
+            <a class="btn primary" href="contacto.html">Contactar</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <strong>Nombre del Proyecto</strong>
+        <p>© <span id="year"></span> Todos los derechos reservados.</p>
+      </div>
+      <address>
+        <p><a href="mailto:hola@tu-dominio.com">hola@tu-dominio.com</a></p>
+        <p><a href="tel:+520000000000">+52 000 000 0000</a></p>
+      </address>
+      <nav aria-label="Secundario">
+        <a href="index.html">Inicio</a>
+        <a href="servicios.html">Servicios</a>
+        <a href="acerca.html" aria-current="page">Acerca</a>
+        <a href="contacto.html">Contacto</a>
+        <a href="/aviso-privacidad.html">Privacidad</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    const toggle = document.querySelector('.nav-toggle');
+    const menu = document.getElementById('menu');
+    toggle?.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      menu.classList.toggle('open');
+    });
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

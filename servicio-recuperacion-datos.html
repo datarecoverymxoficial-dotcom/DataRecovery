@@ -5,11 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Recuperación de Datos — Data Recovery</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* === Popup bonito === */
+    .popup-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .popup {
+      background: #fff;
+      border-radius: 12px;
+      padding: 2em;
+      text-align: center;
+      max-width: 350px;
+      width: 90%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      animation: popupIn 0.3s ease;
+    }
+
+    .popup h2 {
+      color: #2563eb;
+      margin-bottom: 0.5em;
+    }
+
+    .popup p {
+      color: #333;
+      margin-bottom: 1em;
+    }
+
+    .popup button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.6em 1.2em;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background 0.2s;
+    }
+
+    .popup button:hover {
+      background: #1e4fd1;
+    }
+
+    @keyframes popupIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
 </head>
 <body>
 <header class="site-header">
   <div class="container nav">
-    <a class="brand" href="index.html"><img src="imagenes/logo.png" alt="" width="28" height="28"><span>Data Recovery</span></a>
+    <a class="brand" href="index.html">
+      <img src="imagenes/logo.png" alt="" width="28" height="28">
+      <span>Data Recovery</span>
+    </a>
     <button class="nav-toggle" aria-expanded="false" aria-controls="menu">☰</button>
     <nav id="menu" class="menu" aria-label="Principal">
       <ul>
@@ -30,27 +87,32 @@
         ¿Perdiste información en tu computadora, disco duro o memoria USB? Recuperamos tus archivos de forma segura y confiable, devolviéndote lo que pensabas perdido.
       </p>
 
-   <div class="service-intro" style="margin-top:16px;">
-  <article class="card">
-    <h3>Costos orientativos</h3>
-    <ul class="list">
-      <li>Diagnóstico: <strong>$0</strong></li>
-      <li>Casos lógicos: <strong>$1,200–$2,500 MXN</strong></li>
-      <li>Casos físicos: <strong>$3,500–$9,000 MXN</strong></li>
-    </ul>
-    <p class="help">Los precios pueden variar por capacidad, tipo de daño y urgencia.</p>
-  </article>
+      <div class="service-intro" style="margin-top:16px;">
+        <article class="card">
+          <h3>Costos orientativos</h3>
+          <ul class="list">
+            <li>Diagnóstico: <strong>$0</strong></li>
+            <li>Casos lógicos: <strong>$1,200–$2,500 MXN</strong></li>
+            <li>Casos físicos: <strong>$3,500–$9,000 MXN</strong></li>
+          </ul>
+          <p class="help">Los precios pueden variar por capacidad, tipo de daño y urgencia.</p>
+        </article>
 
-  <figure class="service-illustration">
-    <img src="imagenes/serv_rec_p.png"
-         alt="Recuperación de datos"
-         loading="lazy" decoding="async">
-  </figure>
-</div>
-
+        <figure class="service-illustration">
+          <img src="imagenes/serv_rec_p.png"
+               alt="Recuperación de datos"
+               loading="lazy" decoding="async">
+        </figure>
+      </div>
 
       <h3 style="margin-top:20px;">Solicita tu presupuesto</h3>
-      <form class="form" id="form-presu">
+      <!-- Formulario conectado a Formspree -->
+      <form 
+        class="form" 
+        id="form-presu"
+        action="https://formspree.io/f/mnngoppk"
+        method="POST"
+      >
         <div class="grid-2">
           <label><span>Nombre</span><input name="nombre" required></label>
           <label><span>Correo</span><input name="correo" type="email" required></label>
@@ -79,10 +141,11 @@
         <p class="help" id="estimado-ayuda">Estimado: —</p>
         <button class="btn primary" type="submit">Solicitar presupuesto</button>
       </form>
+
+      <div class="btn-center" style="margin-top:22px;">
+        <a href="servicios.html" class="btn diagnostico">Volver</a>
+      </div>
     </div>
-    <div class="btn-center" style="margin-top:22px;">
-          <a href="servicios.html" class="btn diagnostico">volver</a>
-        </div>
   </section>
 </main>
 
@@ -98,13 +161,22 @@
   </div>
 </footer>
 
+<!-- Popup -->
+<div class="popup-overlay" id="popup-overlay">
+  <div class="popup">
+    <h2>✅ ¡Solicitud enviada!</h2>
+    <p>Gracias por contactarnos. Te enviaremos tu presupuesto pronto.</p>
+    <button id="close-popup">Cerrar</button>
+  </div>
+</div>
+
 <script>
   // Menú móvil
   const toggle=document.querySelector('.nav-toggle'), menu=document.getElementById('menu');
   toggle?.addEventListener('click',()=>{const e=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!e));menu.classList.toggle('open');});
   document.getElementById('year').textContent=new Date().getFullYear();
 
-  // Estimador simple (cliente)
+  // Estimador simple
   const form=document.getElementById('form-presu');
   const ayuda=document.getElementById('estimado-ayuda');
   const rangos={
@@ -120,10 +192,33 @@
     }
   }
   form?.addEventListener('change',calc);
-  form?.addEventListener('submit', (e)=> {
+
+  // Envío real a Formspree
+  const popupOverlay=document.getElementById('popup-overlay');
+  const closePopup=document.getElementById('close-popup');
+
+  form?.addEventListener('submit', async (e)=>{
     e.preventDefault();
-    alert('¡Gracias! Te enviaremos tu presupuesto a tu correo.');
-    form.reset(); ayuda.textContent='Estimado: —';
+    const formData=new FormData(form);
+
+    const response=await fetch(form.action, {
+      method:form.method,
+      body:formData,
+      headers:{ 'Accept':'application/json' }
+    });
+
+    if(response.ok){
+      popupOverlay.style.display='flex';
+      form.reset();
+      ayuda.textContent='Estimado: —';
+    }else{
+      alert("❌ Hubo un error al enviar el mensaje. Inténtalo de nuevo.");
+    }
+  });
+
+  closePopup.addEventListener('click',()=>popupOverlay.style.display='none');
+  popupOverlay.addEventListener('click',e=>{
+    if(e.target===popupOverlay) popupOverlay.style.display='none';
   });
 </script>
 </body>

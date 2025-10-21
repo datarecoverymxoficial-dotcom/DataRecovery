@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sistemas de Respaldo en Dispositivos — Data Recovery</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* === Popup bonito (consistente con las otras páginas) === */
+    .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 999; }
+    .popup { background: #fff; border-radius: 12px; padding: 2em; text-align: center; max-width: 350px; width: 90%; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: popupIn .3s ease; }
+    .popup h2 { color: #2563eb; margin-bottom: .5em; }
+    .popup p  { color: #333; margin-bottom: 1em; }
+    .popup button { background:#2563eb; color:#fff; border:0; padding:.6em 1.2em; border-radius:6px; cursor:pointer; font-size:1em; }
+    .popup button:hover { background:#1e4fd1; }
+    @keyframes popupIn { from { transform: scale(.8); opacity:0; } to { transform: scale(1); opacity:1; } }
+
+    /* Honeypot oculto y accesible */
+    .hp-wrap { position: absolute; left: -9999px; width:1px; height:1px; overflow:hidden; }
+  </style>
 </head>
 <body>
 <header class="site-header">
@@ -45,15 +58,28 @@
           </ul>
           <p class="help">El costo depende del número de equipos, volumen de datos y políticas de versiones. El hardware (discos/NAS) se cotiza por separado.</p>
         </article>
-         <figure class="service-illustration">
-    <img src="imagenes/serv_res_d.png"
-         alt="Recuperación de datos"
-         loading="lazy" decoding="async">
-  </figure>
+        <figure class="service-illustration">
+          <img src="imagenes/serv_res_d.png" alt="Sistemas de respaldo en dispositivos" loading="lazy" decoding="async">
+        </figure>
       </div>
 
       <h3 style="margin-top:20px;">Solicita tu presupuesto</h3>
-      <form class="form" id="form-presu">
+      <!-- Form con Formspree + honeypot + origen -->
+      <form class="form" id="form-presu"
+            action="https://formspree.io/f/mnngoppk"
+            method="POST">
+        <!-- Origen para identificar esta página -->
+        <input type="hidden" name="origen" value="respaldo_dispositivos">
+        <!-- (Opcional) subject dinámico — se completa en JS -->
+        <input type="hidden" name="_subject" id="subject-field" value="Solicitud: Sistemas de Respaldo">
+
+        <!-- Honeypot anti-spam -->
+        <div class="hp-wrap" aria-hidden="true">
+          <label>Dejar vacío:
+            <input type="text" name="campo_extra" tabindex="-1" autocomplete="off">
+          </label>
+        </div>
+
         <div class="grid-2">
           <label><span>Nombre</span><input name="nombre" required></label>
           <label><span>Correo</span><input name="correo" type="email" required></label>
@@ -107,9 +133,8 @@
       </form>
     </div>
     <div class="btn-center" style="margin-top:22px;">
-          <a href="servicios.html" class="btn diagnostico">volver</a>
-        </div>
-  </section>
+      <a href="servicios.html" class="btn diagnostico">Volver</a>
+    </div>
   </section>
 </main>
 
@@ -125,9 +150,19 @@
   </div>
 </footer>
 
+<!-- Popup -->
+<div class="popup-overlay" id="popup-overlay">
+  <div class="popup">
+    <h2>✅ ¡Solicitud enviada!</h2>
+    <p>Gracias por contactarnos. Te enviaremos tu presupuesto pronto.</p>
+    <button id="close-popup">Cerrar</button>
+  </div>
+</div>
+
 <script>
   // Menú móvil
-  const toggle=document.querySelector('.nav-toggle'), menu=document.getElementById('menu');
+  const toggle=document.querySelector('.nav-toggle');
+  const menu=document.getElementById('menu');
   toggle?.addEventListener('click',()=>{
     const e=toggle.getAttribute('aria-expanded')==='true';
     toggle.setAttribute('aria-expanded',String(!e));
@@ -153,11 +188,11 @@
     "26mas": 1.70
   };
 
-  // Ajuste por volumen (afecta tiempos de configuración y validación)
+  // Ajuste por volumen
   const factorVolumen = {
-    menos500:  1.00,
-    "500a2000":1.15,
-    mas2000:   1.30
+    menos500:   1.00,
+    "500a2000": 1.15,
+    mas2000:    1.30
   };
 
   // Mantenimiento mensual (opcional)
@@ -189,17 +224,55 @@
         texto += `.`;
       }
       texto += " (Orientativo; no incluye hardware).";
-
       ayuda.textContent = texto;
     }
   }
-
   form?.addEventListener('change', calc);
-  form?.addEventListener('submit', (e)=>{
+
+  // ===== Envío a Formspree + popup + honeypot =====
+  const popupOverlay=document.getElementById('popup-overlay');
+  const closePopup=document.getElementById('close-popup');
+
+  form?.addEventListener('submit', async (e)=>{
     e.preventDefault();
-    alert('¡Gracias! Te enviaremos tu presupuesto a tu correo.');
-    form.reset(); ayuda.textContent='Estimado: —';
+    const data = new FormData(form);
+
+    // Bloquear bots por honeypot
+    if ((data.get('campo_extra') || '').toString().trim() !== '') return;
+
+    // Armar subject con parámetros y estimado si existe
+    const subject = (() => {
+      const tipo = data.get('tipo');
+      const usuarios = data.get('usuarios');
+      const volumen = data.get('volumen');
+      const manto = data.get('manto');
+      const est = ayuda.textContent && ayuda.textContent.includes('Setup estimado') ? ` | ${ayuda.textContent}` : '';
+      return `Solicitud: Respaldo (${tipo}, ${usuarios}, ${volumen}, manto:${manto})${est}`;
+    })();
+    const subjField = document.getElementById('subject-field');
+    if (subjField) subjField.value = subject;
+
+    try {
+      const response = await fetch(form.action, {
+        method: form.method,
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      });
+      if (response.ok) {
+        popupOverlay.style.display='flex';
+        form.reset();
+        ayuda.textContent='Estimado: —';
+      } else {
+        alert("❌ Ocurrió un error al enviar el formulario. Inténtalo de nuevo.");
+      }
+    } catch (error) {
+      alert("⚠️ No se pudo conectar con el servidor. Revisa tu conexión e intenta más tarde.");
+    }
   });
+
+  // Cerrar popup
+  closePopup.addEventListener('click',()=>popupOverlay.style.display='none');
+  popupOverlay.addEventListener('click',e=>{ if(e.target===popupOverlay) popupOverlay.style.display='none'; });
 </script>
 </body>
 </html>

@@ -43,6 +43,22 @@
       </div>
     </section>
 
+<!-- Tarjeta interactiva del Plan de Negocio 
+<div class="card-flip">
+  <div class="card-inner">
+    <div class="card-front">
+      <img src="imagenes/plan_negocio_portada.png" alt="Plan de Negocio" class="card-img">
+      <h3>Plan de Negocio</h3>
+    </div>
+    <div class="card-back">
+      <h3>Plan de Negocio</h3>
+      <p>Puedes revisar o descargar nuestro plan de negocio completo.</p>
+      <a href="plan_negocio.pdf" target="_blank" class="btn-card">📄 Ver PDF</a>
+      <a href="plan_negocio.pdf" download class="btn-card secondary">⬇️ Descargar</a>
+    </div>
+  </div>
+</div>
+-->
  <section class="section">
   <div class="container">
     <figure class="hero-card">
@@ -169,5 +185,93 @@
     toggle?.addEventListener('click',()=>{const expanded=toggle.getAttribute('aria-expanded')==='true';toggle.setAttribute('aria-expanded',String(!expanded));menu.classList.toggle('open');});
     document.getElementById('year').textContent=new Date().getFullYear();
   </script>
+  
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const widget   = document.getElementById('plan-widget');
+  const planCard = document.getElementById('plan-card');
+  const btnMin   = document.getElementById('plan-min');
+  const btnClose = document.getElementById('plan-close');
+  const btnChip  = document.getElementById('plan-chip');
+
+  if (!widget || !planCard || !btnMin || !btnClose || !btnChip) {
+    console.warn('Widget Plan: faltan elementos en el DOM');
+    return;
+  }
+
+  // Evitar que el click en los botones dispare el flip
+  [btnMin, btnClose, btnChip].forEach(b=>{
+    b.addEventListener('click', e => e.stopPropagation());
+  });
+
+  // Flip por click en touch/pantalla pequeña
+  planCard.addEventListener('click', () => {
+    if (matchMedia('(hover: none)').matches || window.innerWidth < 900) {
+      planCard.classList.toggle('flipped');
+    }
+  });
+
+  // Restaurar estado
+  const state = localStorage.getItem('planWidgetState'); // 'min' | 'hide' | ''
+  if (state === 'min')  widget.classList.add('is-minimized');
+  if (state === 'hide') widget.classList.add('is-hidden');
+
+  // Minimizar
+  btnMin.addEventListener('click', () => {
+    widget.classList.toggle('is-minimized');
+    localStorage.setItem('planWidgetState',
+      widget.classList.contains('is-minimized') ? 'min' : '');
+  });
+
+  // Mostrar desde la pastilla
+  btnChip.addEventListener('click', () => {
+    widget.classList.remove('is-minimized');
+    localStorage.setItem('planWidgetState','');
+  });
+
+  // Cerrar
+  btnClose.addEventListener('click', () => {
+    widget.classList.add('is-hidden');
+    localStorage.setItem('planWidgetState','hide');
+  });
+});
+</script>
+  
+  <!-- WIDGET FLOTANTE – PLAN DE NEGOCIO (VERSIÓN FUNCIONAL) -->
+<div class="plan-widget" id="plan-widget" aria-live="polite">
+  <div class="plan-controls">
+    <button class="plan-min" id="plan-min" title="Minimizar">–</button>
+    <button class="plan-close" id="plan-close" title="Cerrar">×</button>
+  </div>
+
+  <div class="card-flip plan-card" id="plan-card" role="button" aria-label="Plan de negocio">
+    <div class="card-inner">
+      <div class="card-front">
+        <img src="imagenes/plan_negocio_portada.png" alt="Plan de Negocio" class="card-img">
+        <h3>Plan de Negocio</h3>
+        <span class="hint">Pasa el cursor o toca</span>
+      </div>
+      <div class="card-back">
+        <h3>Plan de Negocio</h3>
+        <p>Revisar o descargar el PDF.</p>
+        <a href="plan_negocio.pdf" target="_blank" class="btn-card">📄 Ver PDF</a>
+        <a href="plan_negocio.pdf" download class="btn-card secondary">⬇️ Descargar</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pastilla cuando está minimizado -->
+  <button class="plan-chip" id="plan-chip" title="Mostrar Plan">📄 Plan de negocio</button>
+</div>
+
 </body>
+
+
+
+
+  <!-- Estado minimizado -->
+  <button class="plan-chip" id="plan-chip" aria-label="Abrir Plan de negocio">
+    📄 Plan de negocio
+  </button>
+</div>
 </html>

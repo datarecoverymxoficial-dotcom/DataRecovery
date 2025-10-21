@@ -26,6 +26,9 @@
     }
     .popup button:hover { background:#1e4fd1; }
     @keyframes popupIn { from { transform: scale(.8); opacity:0; } to { transform: scale(1); opacity:1; } }
+
+    /* Honeypot oculto y accesible */
+    .hp-wrap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
   </style>
 </head>
 <body>
@@ -71,13 +74,31 @@
       </div>
 
       <h3 style="margin-top:20px;">Solicita tu presupuesto</h3>
-      <!-- Form conectado a Formspree -->
+      <!-- Form conectado a Formspree + metadata de origen/imagen/url/estimado -->
       <form
         class="form"
         id="form-presu"
         action="https://formspree.io/f/mnngoppk"
         method="POST"
       >
+        <!-- Identificador de esta página -->
+        <input type="hidden" name="origen" value="recuperacion_movil">
+        <!-- Subject dinámico (se completa en JS) -->
+        <input type="hidden" name="_subject" id="subject-field" value="Solicitud: Recuperación móvil">
+        <!-- Estimado en texto (se completa en JS) -->
+        <input type="hidden" name="estimado_texto" id="estimado-field" value="">
+        <!-- URL de la página (se completa en JS) -->
+        <input type="hidden" name="page_url" id="page-url-field" value="">
+        <!-- Imagen asociada a la página -->
+        <input type="hidden" name="page_image" id="page-image-field" value="imagenes/serv_rec_m.png">
+
+        <!-- Honeypot anti-spam (dejar vacío) -->
+        <div class="hp-wrap" aria-hidden="true">
+          <label>Dejar este campo vacío:
+            <input type="text" name="campo_extra" tabindex="-1" autocomplete="off">
+          </label>
+        </div>
+
         <div class="grid-2">
           <label><span>Nombre</span><input name="nombre" required></label>
           <label><span>Correo</span><input name="correo" type="email" required></label>
@@ -162,17 +183,30 @@
   }
   form?.addEventListener('change', calc);
 
-  // Envío real a Formspree + popup
+  // Envío real a Formspree + metadata + popup
   const popupOverlay = document.getElementById('popup-overlay');
   const closePopup = document.getElementById('close-popup');
 
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData(form);
+    const data = new FormData(form);
+
+    // Honeypot: si trae texto, cancelar envío (bot)
+    if ((data.get('campo_extra') || '').toString().trim() !== '') return;
+
+    // Completar metadata antes de enviar
+    document.getElementById('page-url-field').value = window.location.href;
+    // subject bonito con selección + estimado
+    const tipo = data.get('tipo');
+    const cap  = data.get('capacidad');
+    const est  = (ayuda.textContent && ayuda.textContent.startsWith('Estimado')) ? ` | ${ayuda.textContent}` : '';
+    document.getElementById('subject-field').value  = `Solicitud: Recuperación móvil (${tipo}, ${cap})${est}`;
+    document.getElementById('estimado-field').value  = ayuda.textContent || '';
+
     try {
       const response = await fetch(form.action, {
         method: form.method,
-        body: formData,
+        body: data,
         headers: { 'Accept': 'application/json' }
       });
       if (response.ok) {

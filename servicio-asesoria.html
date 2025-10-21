@@ -110,7 +110,8 @@
               <option value="presencial">Presencial</option>
             </select>
           </label>
-          <label>
+          <!-- 👇 le añadimos ID para poder mostrar/ocultar -->
+          <label id="grupo-participantes">
             <span>Participantes</span>
             <select name="personas" required>
               <option value="1">1 persona</option>
@@ -174,7 +175,11 @@
 
   function calc(){
     const f = new FormData(form);
-    const tipo = f.get('tipo'), dur = f.get('duracion'), mod = f.get('modalidad'), ppl = f.get('personas');
+    const tipo = f.get('tipo'), dur = f.get('duracion'), mod = f.get('modalidad');
+
+    // si es individual, fijamos "1" persona para el cálculo
+    const ppl = (tipo === 'individual') ? '1' : f.get('personas');
+
     if(tarifaHora[tipo] && factorDuracion[dur] && factorModalidad[mod] && factorPersonas[ppl]){
       const [hMin, hMax] = tarifaHora[tipo];
       const min = Math.round(hMin * factorDuracion[dur] * factorModalidad[mod] * factorPersonas[ppl]);
@@ -183,6 +188,33 @@
     }
   }
   form?.addEventListener('change', calc);
+
+  // ===== Mostrar/ocultar Participantes según tipo =====
+  const selTipo = document.querySelector('select[name="tipo"]');
+  const grupoParticipantes = document.getElementById('grupo-participantes');
+  const selParticipantes = grupoParticipantes?.querySelector('select[name="personas"]');
+
+  function actualizarParticipantes(){
+    if (selTipo.value === 'individual') {
+      // ocultar y desactivar
+      grupoParticipantes.style.display = 'none';
+      if (selParticipantes) {
+        selParticipantes.disabled = true;
+        selParticipantes.removeAttribute('required'); // evitar validación
+        selParticipantes.value = '1'; // coherente con cálculo
+      }
+    } else {
+      // mostrar y activar
+      grupoParticipantes.style.display = '';
+      if (selParticipantes) {
+        selParticipantes.disabled = false;
+        selParticipantes.setAttribute('required','required');
+      }
+    }
+    calc(); // recalcular estimado al cambiar visibilidad
+  }
+  selTipo?.addEventListener('change', actualizarParticipantes);
+  actualizarParticipantes(); // estado inicial
 
   // ===== Envío a Formspree + popup + honeypot =====
   const popupOverlay=document.getElementById('popup-overlay');
@@ -196,14 +228,13 @@
     if ((data.get('campo_extra') || '').toString().trim() !== '') return;
 
     // Subject dinámico y estimado en oculto
-    const subject = (() => {
-      const tipo = data.get('tipo');
-      const dur = data.get('duracion');
-      const mod = data.get('modalidad');
-      const ppl = data.get('personas');
-      const est = (ayuda.textContent && ayuda.textContent.startsWith('Estimado')) ? ` | ${ayuda.textContent}` : '';
-      return `Solicitud: Asesoría (${tipo}, ${dur}, ${mod}, ${ppl})${est}`;
-    })();
+    const tipo = data.get('tipo');
+    const dur = data.get('duracion');
+    const mod = data.get('modalidad');
+    const ppl = (tipo === 'individual') ? '' : `, ${data.get('personas')}`;
+    const est = (ayuda.textContent && ayuda.textContent.startsWith('Estimado')) ? ` | ${ayuda.textContent}` : '';
+    const subject = `Solicitud: Asesoría (${tipo}, ${dur}, ${mod}${ppl})${est}`;
+
     document.getElementById('subject-field').value = subject;
     document.getElementById('estimado-field').value = ayuda.textContent || '';
 
@@ -217,6 +248,7 @@
         popupOverlay.style.display='flex';
         form.reset();
         ayuda.textContent='Estimado: —';
+        actualizarParticipantes(); // deja el estado consistente tras reset
       } else {
         alert("❌ Ocurrió un error al enviar el formulario. Inténtalo de nuevo.");
       }
@@ -227,7 +259,7 @@
 
   // Cerrar popup
   closePopup.addEventListener('click',()=>popupOverlay.style.display='none');
-  popupOverlay.addEventListener('click',e=>{ if(e.target===popupOverlay) popupOverlay.style.display==='flex' && (e.target===popupOverlay) ? popupOverlay.style.display='none' : null; });
+  popupOverlay.addEventListener('click',e=>{ if(e.target===popupOverlay) popupOverlay.style.display='none'; });
 </script>
 </body>
 </html>

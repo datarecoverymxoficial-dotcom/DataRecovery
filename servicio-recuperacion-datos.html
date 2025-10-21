@@ -17,7 +17,6 @@
       justify-content: center;
       z-index: 999;
     }
-
     .popup {
       background: #fff;
       border-radius: 12px;
@@ -28,36 +27,18 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
       animation: popupIn 0.3s ease;
     }
-
-    .popup h2 {
-      color: #2563eb;
-      margin-bottom: 0.5em;
-    }
-
-    .popup p {
-      color: #333;
-      margin-bottom: 1em;
-    }
-
+    .popup h2 { color: #2563eb; margin-bottom: 0.5em; }
+    .popup p  { color: #333; margin-bottom: 1em; }
     .popup button {
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 0.6em 1.2em;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1em;
+      background: #2563eb; color: white; border: none;
+      padding: 0.6em 1.2em; border-radius: 6px; cursor: pointer; font-size: 1em;
       transition: background 0.2s;
     }
+    .popup button:hover { background: #1e4fd1; }
+    @keyframes popupIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-    .popup button:hover {
-      background: #1e4fd1;
-    }
-
-    @keyframes popupIn {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
+    /* Honeypot oculto y accesible */
+    .hp-wrap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
   </style>
 </head>
 <body>
@@ -106,13 +87,27 @@
       </div>
 
       <h3 style="margin-top:20px;">Solicita tu presupuesto</h3>
-      <!-- Formulario conectado a Formspree -->
+      <!-- Formulario conectado a Formspree + metadata -->
       <form 
         class="form" 
         id="form-presu"
         action="https://formspree.io/f/mnngoppk"
         method="POST"
       >
+        <!-- Metadatos -->
+        <input type="hidden" name="origen" value="recuperacion_pc">
+        <input type="hidden" name="_subject" id="subject-field" value="Solicitud: Recuperación de datos">
+        <input type="hidden" name="estimado_texto" id="estimado-field" value="">
+        <input type="hidden" name="page_url" id="page-url-field" value="">
+        <input type="hidden" name="page_image" id="page-image-field" value="imagenes/serv_rec_p.png">
+
+        <!-- Honeypot anti-spam -->
+        <div class="hp-wrap" aria-hidden="true">
+          <label>Dejar vacío:
+            <input type="text" name="campo_extra" tabindex="-1" autocomplete="off">
+          </label>
+        </div>
+
         <div class="grid-2">
           <label><span>Nombre</span><input name="nombre" required></label>
           <label><span>Correo</span><input name="correo" type="email" required></label>
@@ -193,13 +188,24 @@
   }
   form?.addEventListener('change',calc);
 
-  // Envío real a Formspree
+  // Envío real a Formspree + metadata + popup
   const popupOverlay=document.getElementById('popup-overlay');
   const closePopup=document.getElementById('close-popup');
 
   form?.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const formData=new FormData(form);
+
+    // Honeypot: cancelar si viene con texto
+    if ((formData.get('campo_extra') || '').toString().trim() !== '') return;
+
+    // Completar metadata
+    document.getElementById('page-url-field').value = window.location.href;
+    const tipo = formData.get('tipo');
+    const cap  = formData.get('capacidad');
+    const est  = (ayuda.textContent && ayuda.textContent.startsWith('Estimado')) ? ` | ${ayuda.textContent}` : '';
+    document.getElementById('subject-field').value = `Solicitud: Recuperación de datos (${tipo}, ${cap})${est}`;
+    document.getElementById('estimado-field').value = ayuda.textContent || '';
 
     const response=await fetch(form.action, {
       method:form.method,

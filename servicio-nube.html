@@ -64,12 +64,20 @@
       </div>
 
       <h3 style="margin-top:20px;">Solicita tu presupuesto</h3>
-      <!-- Form con Formspree + honeypot + origen -->
+      <!-- Form con Formspree + honeypot + origen + metadata de página -->
       <form class="form" id="form-presu"
             action="https://formspree.io/f/mnngoppk"
             method="POST">
-        <!-- Campo oculto de origen -->
+        <!-- Identificador de esta página -->
         <input type="hidden" name="origen" value="respaldo_nube">
+        <!-- Subject dinámico (se completa en JS) -->
+        <input type="hidden" name="_subject" id="subject-field" value="Solicitud: Respaldo en la nube">
+        <!-- Estimado en texto (se completa en JS) -->
+        <input type="hidden" name="estimado_texto" id="estimado-field" value="">
+        <!-- URL de la página (se completa en JS) -->
+        <input type="hidden" name="page_url" id="page-url-field" value="">
+        <!-- Imagen asociada a la página (referencia visual para ti) -->
+        <input type="hidden" name="page_image" id="page-image-field" value="imagenes/serv_rec_n.png">
 
         <!-- Honeypot anti-spam (dejar vacío) -->
         <div class="hp-wrap" aria-hidden="true">
@@ -185,7 +193,7 @@
   }
   form?.addEventListener('change',calc);
 
-  // Envío a Formspree + popup + honeypot
+  // Envío a Formspree + popup + honeypot + metadata de página
   const popupOverlay=document.getElementById('popup-overlay');
   const closePopup=document.getElementById('close-popup');
 
@@ -197,6 +205,21 @@
     if ((data.get('campo_extra') || '').toString().trim() !== '') {
       return; // bot probable
     }
+
+    // ---- Completar metadata útil antes de enviar ----
+    // URL actual
+    document.getElementById('page-url-field').value = window.location.href;
+
+    // Subject bonito con selección + estimado
+    const vol = data.get('volumen');
+    const eq  = data.get('equipos');
+    const est = (ayuda.textContent && ayuda.textContent.startsWith('Estimado'))
+                ? ` | ${ayuda.textContent}` : '';
+    const subject = `Solicitud: Respaldo en la nube (${vol}, ${eq})${est}`;
+    document.getElementById('subject-field').value = subject;
+
+    // Guardar el estimado de texto
+    document.getElementById('estimado-field').value = ayuda.textContent || '';
 
     try {
       const response = await fetch(form.action, {

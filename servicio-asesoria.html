@@ -45,15 +45,14 @@
           </ul>
           <p class="help">El costo depende de la duración, modalidad y número de participantes.</p>
         </article>
-         <figure class="service-illustration">
-    <img src="imagenes/serv_ase.png"
-         alt="Recuperación de datos"
-         loading="lazy" decoding="async">
-  </figure>
+        <figure class="service-illustration">
+          <img src="imagenes/serv_ase.png" alt="Recuperación de datos" loading="lazy" decoding="async">
+        </figure>
       </div>
 
       <h3 style="margin-top:20px;">Solicita tu presupuesto</h3>
-      <form class="form" id="form-presu">
+      <!-- Aquí va el formulario con Formspree -->
+      <form class="form" id="form-presu" action="https://formspree.io/f/mnngoppk" method="POST">
         <div class="grid-2">
           <label><span>Nombre</span><input name="nombre" required></label>
           <label><span>Correo</span><input name="correo" type="email" required></label>
@@ -106,9 +105,8 @@
       </form>
     </div>
     <div class="btn-center" style="margin-top:22px;">
-          <a href="servicios.html" class="btn diagnostico">volver</a>
-        </div>
-  </section>
+      <a href="servicios.html" class="btn diagnostico">volver</a>
+    </div>
   </section>
 </main>
 
@@ -138,56 +136,27 @@
   const form=document.getElementById('form-presu');
   const ayuda=document.getElementById('estimado-ayuda');
 
-  // Tarifas base por tipo (por hora)
-  const tarifaHora = {
-    individual: [600, 900],     // min, max por hora
-    empresa:    [900, 1200]
-  };
-
-  // Multiplicadores por duración (ligero descuento en bloques largos)
-  const factorDuracion = {
-    "1h": 1.00,
-    "2h": 1.90,   // 5% desc aprox (en lugar de 2.00)
-    "4h": 3.60    // 10% desc aprox (en lugar de 4.00)
-  };
-
-  // Ajuste por modalidad (presencial implica traslado/tiempo)
-  const factorModalidad = {
-    remota: 1.00,
-    presencial: 1.20
-  };
-
-  // Ajuste por participantes (afecta preparación/soporte)
-  const factorPersonas = {
-    "1":     1.00,
-    "2a5":   1.15,
-    "6a15":  1.30,
-    "16mas": 1.55
-  };
+  const tarifaHora = { individual: [600, 900], empresa: [900, 1200] };
+  const factorDuracion = { "1h": 1.00, "2h": 1.90, "4h": 3.60 };
+  const factorModalidad = { remota: 1.00, presencial: 1.20 };
+  const factorPersonas = { "1": 1.00, "2a5": 1.15, "6a15": 1.30, "16mas": 1.55 };
 
   function calc(){
     const f = new FormData(form);
-    const tipo = f.get('tipo');
-    const dur  = f.get('duracion');
-    const mod  = f.get('modalidad');
-    const ppl  = f.get('personas');
-
+    const tipo = f.get('tipo'), dur = f.get('duracion'), mod = f.get('modalidad'), ppl = f.get('personas');
     if(tarifaHora[tipo] && factorDuracion[dur] && factorModalidad[mod] && factorPersonas[ppl]){
       const [hMin, hMax] = tarifaHora[tipo];
-      const fd = factorDuracion[dur], fm = factorModalidad[mod], fp = factorPersonas[ppl];
-
-      const min = Math.round(hMin * fd * fm * fp);
-      const max = Math.round(hMax * fd * fm * fp);
-
+      const min = Math.round(hMin * factorDuracion[dur] * factorModalidad[mod] * factorPersonas[ppl]);
+      const max = Math.round(hMax * factorDuracion[dur] * factorModalidad[mod] * factorPersonas[ppl]);
       ayuda.textContent = `Estimado: $${min.toLocaleString()}–$${max.toLocaleString()} MXN (orientativo, incluye materiales).`;
     }
   }
 
   form?.addEventListener('change', calc);
   form?.addEventListener('submit', (e)=>{
-    e.preventDefault();
-    alert('¡Gracias! Te enviaremos tu presupuesto a tu correo.');
-    form.reset(); ayuda.textContent = 'Estimado: —';
+    // Aquí ya no usamos preventDefault, para que el envío se haga a Formspree:
+    // e.preventDefault(); ❌
+    alert('¡Gracias! Tu solicitud ha sido enviada correctamente.');
   });
 </script>
 </body>

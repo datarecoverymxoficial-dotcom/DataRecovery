@@ -566,109 +566,36 @@ main {
   background: #f0de98;
   color: #111;
 }
-/* --- Widget flotante fijo --- */
-.plan-widget{
-  position: fixed;
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(16px, env(safe-area-inset-bottom));
-  z-index: 9999;
-  display: grid;
-  row-gap: 6px;
-  align-items: end;
-  pointer-events: none;          /* evita bloquear clics detrás */
-}
-.plan-widget > *{ pointer-events: auto; } /* solo sus hijos interactúan */
 
-/* Botones cerrar/minimizar */
-.plan-close, .plan-min{
-  position: absolute;
-  top: 6px;
-  width: 28px; height: 28px;
-  border: 0; border-radius: 8px;
-  background: rgba(0,0,0,.5); color:#fff;
-  font-size: 18px; line-height: 28px;
-  cursor: pointer;
-}
-.plan-close{ right: 6px; }
-.plan-min{ right: 40px; }
-
-/* Tarjeta (reusa tu flip card) */
-.plan-card{ width: 240px; height: 280px; }
-.card-flip{ perspective: 1000px; }
-.card-inner{ position: relative; width:100%; height:100%; transition: transform .8s; transform-style: preserve-3d; }
-.card-front,.card-back{
-  position:absolute; inset:0; border-radius:12px; backface-visibility:hidden;
-  box-shadow:0 8px 24px rgba(0,0,0,.18); display:flex; flex-direction:column;
-  justify-content:center; align-items:center; background:#fff;
-}
-.card-front{ background:#f9fafb; padding:10px; text-align:center; }
-.card-front .card-img{ width:100px; height:100px; margin-bottom:10px; }
-.card-front .hint{ font-size:.85rem; color:#6b7280; }
-
-.card-back{ background:#1e3a8a; color:#fff; transform: rotateY(180deg); padding:14px; text-align:center; }
-.card-flip:hover .card-inner{ transform: rotateY(180deg); }          /* desktop */
-.plan-card.flipped .card-inner{ transform: rotateY(180deg); }        /* touch/click */
-
-.btn-card{
-  background:#fff; color:#1e3a8a; padding:.5em 1em; border-radius:8px; text-decoration:none;
-  font-weight:600; display:inline-block; margin:.25rem 0;
-}
-.btn-card.secondary{ background:#facc15; color:#111; }
-
-/* Chip minimizado */
-.plan-chip{
-  display:none;
-  border:0; border-radius:999px;
-  padding:.55em 1em; font-weight:600; cursor:pointer;
-  background:#111827; color:#fff; box-shadow:0 4px 12px rgba(0,0,0,.25);
-}
-
-/* Estados */
-.plan-widget.is-minimized .plan-card{ display:none; }
-.plan-widget.is-minimized .plan-chip{ display:inline-flex; align-items:center; gap:.4rem; }
-.plan-widget.is-hidden{ display:none; }
-
-/* Responsivo */
-@media (max-width: 640px){
-  .plan-card{ width: 180px; height: 210px; }
-  .card-front .card-img{ width:72px; height:72px; }
-  .plan-min{ display:none; }           /* en móvil solo cerrar */
-}
-
-/* Accesibilidad (reduce motion) */
-@media (prefers-reduced-motion: reduce){
-  .card-inner{ transition: none; }
-}
-/* --- Widget fijo en pantalla --- */
+/* === Widget flotante: versión final única === */
 .plan-widget{
   position: fixed;
   right: 16px;
   bottom: 16px;
-  z-index: 2147483647;         /* SUPER alto para estar encima de todo */
+  z-index: 2147483647;
   display: grid;
   row-gap: 6px;
   align-items: end;
-  isolation: isolate;          /* asegura capa propia para z-index */
+  isolation: isolate;
 }
 
-/* Controles arriba a la derecha del widget */
+/* Controles */
 .plan-controls{
   position: absolute;
   top: -10px; right: 0;
   display: flex; gap: 6px;
-  z-index: 3;                   /* por encima de la tarjeta */
+  z-index: 3;
 }
 .plan-min, .plan-close{
   width: 28px; height: 28px;
   border: 0; border-radius: 8px;
   background: rgba(0,0,0,.65); color:#fff;
-  font-size: 18px; line-height: 28px;
-  cursor: pointer;
+  font-size: 18px; line-height: 28px; cursor: pointer;
   box-shadow: 0 2px 8px rgba(0,0,0,.25);
 }
 .plan-min:hover, .plan-close:hover{ filter: brightness(1.1); }
 
-/* Tarjeta flip */
+/* Tarjeta flip (widget) */
 .plan-card{ width: 240px; height: 280px; position: relative; z-index: 2; }
 .card-flip{ perspective: 1000px; }
 .card-inner{ position: relative; width:100%; height:100%; transition: transform .6s; transform-style: preserve-3d; }
@@ -680,67 +607,45 @@ main {
 .card-front{ background:#f9fafb; padding:10px; text-align:center; }
 .card-front .card-img{ width:100px; height:100px; margin-bottom:10px; }
 .card-front .hint{ font-size:.85rem; color:#6b7280; }
+
 .card-back{
-  background:#0b132b; /* Azul oscuro tipo navy (puedes usar #111827 si prefieres) */
-  color:#f9fafb;
+  background:#0b132b; /* azul oscuro */
+  color:#ffffff;
   transform: rotateY(180deg);
-  padding: 18px;
-  text-align: center;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  padding:18px; text-align:center; border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
 }
-.card-back p {
-  color: #ffffff; /* texto blanco */
-  opacity: 0.9;   /* opcional: un poco más suave, puedes quitar esta línea */
-}
-/* Botones modernos */
+.card-back p{ color:#ffffff; opacity:.9; }
+
+.card-flip:hover .card-inner{ transform: rotateY(180deg); }     /* desktop */
+.plan-card.flipped .card-inner{ transform: rotateY(180deg); }   /* touch */
+
+/* Botones PDF (oscuro, sin amarillos) */
 .btn-card{
-  background:#1e293b;          /* gris oscuro */
-  color:#f9fafb;
-  padding:.6em 1.2em;
-  border-radius:8px;
-  text-decoration:none;
-  font-weight:600;
-  display:inline-block;
-  margin:.35rem 0;
-  box-shadow:0 3px 8px rgba(0,0,0,.3);
+  background:#1e293b; color:#f9fafb;
+  padding:.6em 1.2em; border-radius:8px; text-decoration:none; font-weight:600;
+  display:inline-block; margin:.35rem 0; box-shadow:0 3px 8px rgba(0,0,0,.3);
   transition:all .2s ease;
 }
-.btn-card:hover{
-  background:#334155;
-  transform: translateY(-1px);
-}
-.btn-card.secondary{
-  background:#2563eb;          /* azul brillante */
-  color:#fff;
-}
-.btn-card.secondary:hover{
-  background:#1d4ed8;
-}
-.card-flip:hover .card-inner{ transform: rotateY(180deg); }          /* desktop */
-.plan-card.flipped .card-inner{ transform: rotateY(180deg); }        /* touch/click */
-
-
+.btn-card:hover{ background:#334155; transform: translateY(-1px); }
+.btn-card.secondary{ background:#2563eb; color:#fff; }
+.btn-card.secondary:hover{ background:#1d4ed8; }
 
 /* Pastilla minimizada */
 .plan-chip{
-  display:none;
-  border:0; border-radius:999px;
-  padding:.55em 1em; font-weight:600; cursor:pointer;
+  display:none; border:0; border-radius:999px; padding:.55em 1em; font-weight:600; cursor:pointer;
   background:#111827; color:#fff; box-shadow:0 4px 12px rgba(0,0,0,.25);
-  z-index: 1;
+  z-index:1;
 }
 
 /* Estados */
 .plan-widget.is-minimized .plan-card{ display:none; }
 .plan-widget.is-minimized .plan-chip{ display:inline-flex; align-items:center; gap:.4rem; }
-.plan-widget.is-minimized .plan-controls {
-  display: none; /* oculta los botones - y x cuando está minimizado */
-}
+.plan-widget.is-minimized .plan-controls{ display:none; }
 .plan-widget.is-hidden{ display:none; }
 
 /* Móvil */
 @media (max-width: 640px){
-  .plan-card{ width: 180px; height: 210px; }
+  .plan-card{ width:180px; height:210px; }
   .card-front .card-img{ width:72px; height:72px; }
 }
